@@ -1,2 +1,9 @@
+.#*
 tags
 testcoverageprofile.out
+!bin
+bin/*
+!bin/.gitkeep
+!tmp
+tmp/*
+!tmp/.gitkeep
