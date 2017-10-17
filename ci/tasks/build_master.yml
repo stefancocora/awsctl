@@ -1,0 +1,81 @@
+---
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: golang
+    tag: 1.9
+
+inputs:
+- name: git
+  path: src/github.com/stefancocora/awsctl
+- name: version
+
+outputs:
+- name: tarball
+
+params:
+  SRC_PATH: src/github.com/stefancocora/awsctl
+  HTTP_PROXY: http://pkgcacher.internal:3128
+  HTTPS_PROXY: http://pkgcacher.internal:3128
+  DEBUG: true
+
+run:
+  path: sh
+  args:
+    - "-exc"
+    - |
+      if test "$DEBUG" = "true"
+      then
+          echo "debug: $DEBUG"
+          echo "=== debugging"
+          id
+          echo "HTTP_PROXY: $HTTP_PROXY"
+          echo "HTTPS_PROXY: $HTTPS_PROXY"
+          printf "go version: "
+          go version
+          printf "=== make version: "
+          make --version | sed -e "2,5d"
+          echo "=== gopath: $GOPATH"
+          echo "=== concourse build dir: $PWD"
+          printf "\n=== current environment: "
+          printenv
+          ls -lha
+          echo "=== end debugging"
+      fi
+
+      apt-get update
+      apt-get install -y bash file make
+      echo ""
+
+      echo "=== re-setting GOPATH"
+      export GOPATH=$PWD
+      export PATH=$GOPATH/bin:$PATH
+      echo "re-set gopath: $GOPATH"
+      echo "re-set path: $PATH"
+
+      ROOT=$(cd $(dirname $0) && pwd)
+      version=$(cat $ROOT/version/number)
+      VERSION=$(grep -o "[0-9].[0-9].[0-9]" ${ROOT}/version/number)
+
+      cd $SRC_PATH
+      echo "=== building in path: $PWD"
+      ELF_VERSION=$VERSION make build_production
+
+      EXIT_CODE=$?
+      if test "$EXIT_CODE" -eq 0
+      then
+          ls -lha "$ROOT/tarball/"
+          ls -lha $GOPATH/
+          ls -lha $GOPATH/src/
+          ls -lha $GOPATH/src/github.com/stefancocora/awsctl/bin/
+          cd "$ROOT"
+          tar -czvf "$ROOT/tarball/awsctl-v${version}.gz" "$GOPATH/src/github.com/stefancocora/awsctl/bin/awsctl"
+          echo "$ROOT/tarball/:"
+          ls -lha "$ROOT/tarball/"
+          exit "$EXIT_CODE"
+      else
+          cd $ROOT
+          exit "$EXIT_CODE"
+      fi
