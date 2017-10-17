@@ -124,6 +124,7 @@ function build {
   then
     GITCOMMIT_AND_DIRTY=${GITCOMMIT}${GIT_DIRTY}
     LDFLAGS="
+            -s -w
             -X github.com/stefancocora/${PROJECT_NAME}/pkg/version.GitCommit=${GITCOMMIT_AND_DIRTY} \
             -X github.com/stefancocora/${PROJECT_NAME}/pkg/version.Gitbranch=${GITBRANCH} \
             -X github.com/stefancocora/${PROJECT_NAME}/pkg/version.Buildruntime=${BUILDRUNTIME} \
@@ -136,6 +137,7 @@ function build {
   else
     GITCOMMIT_AND_DIRTY=${GITCOMMIT}
     LDFLAGS="
+            -s -w
             -X github.com/stefancocora/${PROJECT_NAME}/pkg/version.GitCommit=${GITCOMMIT_AND_DIRTY} \
             -X github.com/stefancocora/${PROJECT_NAME}/pkg/version.Gitbranch=${GITBRANCH} \
             -X github.com/stefancocora/${PROJECT_NAME}/pkg/version.Buildruntime=${BUILDRUNTIME} \
@@ -171,12 +173,16 @@ function build {
     # https://golang.org/pkg/net/#hdr-Name_Resolution
     # https://www.osso.nl/blog/golang-statically-linked/
 
-    printf "\n=== build: installing current binary and object files - ${CMD_INSTALL}\n"
+    # changed build to go build instead of go install due to upstream bug
+    # https://github.com/golang/go/issues/18981
+    printf "\n=== build: building current binary\n"
     export GODEBUG=netdns=go+1
     export CGO_ENABLED=0
     echo "GODEBUG=$GODEBUG"
     echo "CGO_ENABLED=$CGO_ENABLED"
-    go install -ldflags "${LDFLAGS}" .
+    # golang linker flags https://golang.org/cmd/link/
+    # https://github.com/golang/dep/blob/master/hack/build-all.bash
+    go build -a -ldflags "${LDFLAGS}" -o bin/awsctl .
     # for a proper semver release for public consumption build it without a GITCOMMIT at all, so that it comes out like this (code automatically takes out the -dev part)
     # go clean -i -r
     # go install ./...
@@ -185,7 +191,7 @@ function build {
     if [[ $? -ne 0 ]];
     then
       date
-      echo "=== error when installing code - something failed ..."
+      echo "=== error when building code - something failed ..."
       exit 1
     fi
 
@@ -194,10 +200,10 @@ function build {
     then
         mkdir "./bin"
         ELF_VERSIONED="${NAME}-${APPVERSION}-${APPVERSIONPRERELEASE}-${GITCOMMIT_AND_DIRTY}"
-        cp "${GOPATH}/bin/${NAME}" "./bin/${ELF_VERSIONED}"
+        mv "bin/${NAME}" "./bin/${ELF_VERSIONED}"
     else
         ELF_VERSIONED="${NAME}-${APPVERSION}-${APPVERSIONPRERELEASE}-${GITCOMMIT_AND_DIRTY}"
-        cp "${GOPATH}/bin/${NAME}" "./bin/${ELF_VERSIONED}"
+        mv "bin/${NAME}" "./bin/${ELF_VERSIONED}"
     fi
 
     printf "\n=== build: info about the built binary\n"
