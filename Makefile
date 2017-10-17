@@ -13,7 +13,7 @@ SHELL := /bin/bash
 MAKEFLAGS += --no-builtin-rules
 
 # constants
-NAME = awsgocli
+NAME = awsctl
 # AUTHOR ?= ukhomeofficedigital
 # REGISTRY ?= quay.io
 # VERSION ?= latest

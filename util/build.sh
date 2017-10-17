@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-NAME='awsgocli'
+NAME='awsctl'
 CWD="${GOPATH}"'/src/github.com/stefancocora/'"${NAME}"
 cd $CWD
 

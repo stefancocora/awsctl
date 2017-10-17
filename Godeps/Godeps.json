@@ -1,6 +1,6 @@
 {
-	"ImportPath": "github.com/stefancocora/awsgocli",
-	"GoVersion": "go1.7",
-	"GodepVersion": "v74",
+	"ImportPath": "github.com/stefancocora/awsctl",
+	"GoVersion": "go1.8",
+	"GodepVersion": "v79",
 	"Deps": []
 }
