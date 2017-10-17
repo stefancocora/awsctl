@@ -46,10 +46,12 @@ var s3EmptyPtr string
 var s3EmptyCmd = &cobra.Command{
 	Use:   "do",
 	Short: "Delete objects in an s3 bucket",
-	Long: `Empties an s3 bucket deleting all objects from that bucket
+	Long: `
+Empties an s3 bucket deleting all objects from that bucket.
+This includes versioned objects.
 
-             Example:
-             awsctl s3 do -b abc123                # empties bucket abc123
+Example:
+awsctl s3 do -b abc123                # empties bucket abc123
 
   `,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -71,4 +73,12 @@ func init() {
 	s3Cmd.AddCommand(s3LsCmd)
 	s3Cmd.AddCommand(s3EmptyCmd)
 
+	// delete objects
+	var s3DelObjDef string
+	var s3DelObjUsage = `the bucket name to empty [required]
+
+  Example:
+  awsctl s3 do -b someBucketName           # delete all objects from within then someBucketName bucket
+`
+	s3EmptyCmd.Flags().StringVarP(&s3DelObjDef, "bucket", "b", "", s3DelObjUsage)
 }
