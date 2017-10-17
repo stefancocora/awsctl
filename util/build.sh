@@ -217,9 +217,9 @@ function build {
     if [[ ! -d "./bin" ]]
     then
         mkdir "./bin"
-        mv "bin/${NAME}" "./bin/${ELF_VERSIONED}"
+        cp "bin/${NAME}" "./bin/${ELF_VERSIONED}"
     else
-        mv "bin/${NAME}" "./bin/${ELF_VERSIONED}"
+        cp "bin/${NAME}" "./bin/${ELF_VERSIONED}"
     fi
 
     printf "\n=== build: info about the built binary\n"
