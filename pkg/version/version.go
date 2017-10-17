@@ -48,7 +48,7 @@ var Buildruntime string
 
 // BinaryName contains the name of the binary to be used as a
 // project wide variable when importing this pkg
-const BinaryName = "vaultguard"
+const BinaryName = "awsctl"
 
 // AppEnvironment denotes the application environment: local, testing, staging, production, ...
 // used to set logging context and other useful plumbing
