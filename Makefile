@@ -89,6 +89,9 @@ help:
 	@echo "  make set_pipeline_master"
 	@echo "  make set_pipeline_prs"
 	@echo ""
+	@echo "Add license headers:"
+	@echo "  make add_license"
+	@echo ""
 	@echo "Regenerating the golang tags:"
 	@echo "  make gotags"
 	@echo ""
@@ -376,3 +379,7 @@ endif
 	@echo "---> Applying CI pipeline ..."
 	fly -t $(CI_TARGET_LOCAL) set-pipeline -c $(CI_PIPELINES_PATH)/$(CI_PRS_PIPELINE) -p $(VG_PIPELINENAME_PRS)
 	fly -t $(CI_TARGET_LOCAL) expose-pipeline --pipeline $(VG_PIPELINENAME_PRS)
+
+.PHONY: add_license
+add_license:
+	util/license/add-license-header.sh
