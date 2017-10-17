@@ -86,7 +86,14 @@ function unit {
 # knows how to build dev and production releases
 function build {
   local APPENVIRONMENT=$1
-  local APPVERSIONPRERELEASE="dev"
+  echo "application environment: ${APPENVIRONMENT}"
+  if [[ "${APPENVIRONMENT}" = "production" ]]
+  then
+      local APPVERSIONPRERELEASE=""
+  else
+      local APPVERSIONPRERELEASE="dev"
+  fi
+
   clear
   date
   printf "\n=== start build\n"
@@ -196,13 +203,18 @@ function build {
     fi
 
     # copy built binary
+    if [[ "${APPENVIRONMENT}" = "production" ]]
+    then
+        ELF_VERSIONED="${NAME}-${APPVERSION}-${GITCOMMIT_AND_DIRTY}"
+    else
+        ELF_VERSIONED="${NAME}-${APPVERSION}-${APPVERSIONPRERELEASE}-${GITCOMMIT_AND_DIRTY}"
+    fi
+
     if [[ ! -d "./bin" ]]
     then
         mkdir "./bin"
-        ELF_VERSIONED="${NAME}-${APPVERSION}-${APPVERSIONPRERELEASE}-${GITCOMMIT_AND_DIRTY}"
         mv "bin/${NAME}" "./bin/${ELF_VERSIONED}"
     else
-        ELF_VERSIONED="${NAME}-${APPVERSION}-${APPVERSIONPRERELEASE}-${GITCOMMIT_AND_DIRTY}"
         mv "bin/${NAME}" "./bin/${ELF_VERSIONED}"
     fi
 
