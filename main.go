@@ -26,7 +26,9 @@ func main() {
 
 	log.Printf("bin: %v version: %v pkg: %v message: %v ( %v )", version.BinaryName, vers, "main", "build context", buildctx)
 
-	cmd.Execute()
+	if err = cmd.Execute(); err != nil {
+		log.Printf("[FATAL] error while trying to execute: %v", err)
+	}
 
 	log.Printf("bin: %v version: %v pkg: %v message: %v", version.BinaryName, vers, "main", "stopping engines, we're done")
 }

@@ -3,6 +3,7 @@ package cmd
 import (
 	"log"
 
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/stefancocora/awsctl/pkg/aws/s3"
 )
@@ -42,6 +43,13 @@ var s3LsCmd = &cobra.Command{
 	},
 }
 
+//delete objects
+var s3DelObjDef string
+var s3DelObjUsage = `the bucket name to empty [required]
+
+  Example:
+  awsctl s3 do -b someBucketName           # delete all objects from within then someBucketName bucket
+`
 var s3EmptyPtr string
 var s3EmptyCmd = &cobra.Command{
 	Use:   "do",
@@ -58,6 +66,10 @@ awsctl s3 do -b abc123                # empties bucket abc123
 		currCmd := cmd.Name()
 		log.Printf("current cli flag: %v", currCmd)
 
+		log.Printf("bucket flag: %v", s3DelObjDef)
+		if s3DelObjDef == "" {
+			return errors.New("bucket name is required")
+		}
 		bk := s3.Bucket{
 			Name: s3EmptyPtr,
 		}
@@ -74,11 +86,5 @@ func init() {
 	s3Cmd.AddCommand(s3EmptyCmd)
 
 	// delete objects
-	var s3DelObjDef string
-	var s3DelObjUsage = `the bucket name to empty [required]
-
-  Example:
-  awsctl s3 do -b someBucketName           # delete all objects from within then someBucketName bucket
-`
 	s3EmptyCmd.Flags().StringVarP(&s3DelObjDef, "bucket", "b", "", s3DelObjUsage)
 }

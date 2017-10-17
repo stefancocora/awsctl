@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"log"
+	"github.com/pkg/errors"
 
 	"github.com/spf13/cobra"
 )
@@ -18,10 +18,11 @@ var RootCmd = &cobra.Command{
 }
 
 //Execute adds all child commands to the root command sets flags appropriately.
-func Execute() {
+func Execute() error {
 	if err := RootCmd.Execute(); err != nil {
-		log.Fatal("[FATAL] unable to add child commands to the root command")
+		return errors.Wrap(err, "error received when running command ")
 	}
+	return nil
 }
 
 var debugPtr bool
