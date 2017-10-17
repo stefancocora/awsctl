@@ -35,16 +35,13 @@ var s3LsCmd = &cobra.Command{
 		currCmd := cmd.Name()
 		log.Printf("current cli flag: %v", currCmd)
 
-		bk := s3.Bucket{
-			Name: s3LsPtr,
-		}
-		bk.List()
+		s3.List()
 		return nil
 	},
 }
 
 //delete objects
-var s3DelObjDef string
+var s3DelObjBuckName string
 var s3DelObjUsage = `the bucket name to empty [required]
 
   Example:
@@ -66,14 +63,16 @@ awsctl s3 do -b abc123                # empties bucket abc123
 		currCmd := cmd.Name()
 		log.Printf("current cli flag: %v", currCmd)
 
-		log.Printf("bucket flag: %v", s3DelObjDef)
-		if s3DelObjDef == "" {
+		log.Printf("bucket flag: %v", s3DelObjBuckName)
+		if s3DelObjBuckName == "" {
 			return errors.New("bucket name is required")
 		}
 		bk := s3.Bucket{
-			Name: s3EmptyPtr,
+			Name: s3DelObjBuckName,
 		}
-		bk.Empty()
+		if err := bk.Empty(); err != nil {
+			return errors.Wrap(err, "error while deleting s3 objects")
+		}
 		return nil
 	},
 }
@@ -86,5 +85,5 @@ func init() {
 	s3Cmd.AddCommand(s3EmptyCmd)
 
 	// delete objects
-	s3EmptyCmd.Flags().StringVarP(&s3DelObjDef, "bucket", "b", "", s3DelObjUsage)
+	s3EmptyCmd.Flags().StringVarP(&s3DelObjBuckName, "bucket", "b", "", s3DelObjUsage)
 }
