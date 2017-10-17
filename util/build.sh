@@ -185,8 +185,12 @@ function build {
     printf "\n=== build: building current binary\n"
     export GODEBUG=netdns=go+1
     export CGO_ENABLED=0
+    export GOOS="linux"
+    export GOARCH="amd64"
     echo "GODEBUG=$GODEBUG"
     echo "CGO_ENABLED=$CGO_ENABLED"
+    echo "GOOS=$GOOS"
+    echo "GOARCH=$GOARCH"
     # golang linker flags https://golang.org/cmd/link/
     # https://github.com/golang/dep/blob/master/hack/build-all.bash
     go build -a -ldflags "${LDFLAGS}" -o bin/awsctl .
