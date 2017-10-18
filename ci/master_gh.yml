@@ -1,0 +1,148 @@
+---
+groups:
+  - name: awsctl_master_gh
+    jobs:
+    - unit
+    - create-final
+    - major
+    - minor
+    - patch
+
+jobs:
+- name: major
+  serial_groups: [version]
+  public: true
+  plan:
+  - get: version
+    params:
+      bump: major
+      pre: rc
+  - put: version
+    params:
+      file: version/number
+- name: minor
+  serial_groups: [version]
+  public: true
+  plan:
+  - get: version
+    params:
+      bump: minor
+      pre: rc
+  - put: version
+    params:
+      file: version/number
+
+- name: patch
+  serial_groups: [version]
+  plan:
+  - get: version
+    params:
+      bump: patch
+      pre: rc
+  - put: version
+    params:
+      file: version/number
+
+- name: unit
+  public: true
+  plan:
+    - aggregate:
+      - get: git
+        trigger: true
+      - get: golang_1.9
+    - aggregate:
+      - task: unit
+        file: git/ci/tasks/unit.yml
+
+- name: create-final
+  public: true
+  serial: true
+  serial_groups: [version]
+  plan:
+    - aggregate:
+      - get: git
+        trigger: true
+        passed: [unit]
+      - get: golang_1.9
+      - get: version
+        params:
+          bump: final
+    - aggregate:
+      - task: display_version
+        image: golang_1.9
+        config:
+          platform: linux
+          inputs:
+          - name: version
+          run:
+            path: sh
+            args:
+              - "-exc"
+              - |
+                id
+                ls -lha
+                ls -lha version/number
+                cat version/number
+      - task: unit
+        file: git/ci/tasks/unit.yml
+      - task: build
+        file: git/ci/tasks/build_master.yml
+    - aggregate:
+      - put: version
+        params:
+          bump: patch
+          pre: rc
+      - put: awsctl_gh-final
+        params:
+          file: tarball/awsctl-*.gz
+      - put: github_release
+        params:
+          name: version/version
+          tag: version/version
+          globs:
+          - tarball/awsctl-*.gz
+
+
+# resources
+resources:
+- name: golang_1.9
+  type: docker-image
+  source:
+    repository: golang
+    tag: 1.9
+
+- name: git
+  type: git
+  source:
+    uri: git@github.com:stefancocora/awsctl.git
+    branch: master
+    private_key: ((github_ssh_priv))
+    every: true
+
+- name: github_release
+  type: github-release
+  source:
+    owner: stefancocora
+    repository: awsctl
+    access_token: ((concourse_github_release_token))
+
+- name: version
+  type: semver
+  source:
+    driver: git
+    uri: git@github.com:stefancocora/awsctl.git
+    private_key: ((github_ssh_priv))
+    branch: version
+    file: ci/version
+    initial_version: "0.0.1"
+
+- name: awsctl_gh-final
+  type: s3
+  source:
+    bucket: awsctl-gh-final
+    regexp: awsctl-(.*)
+    access_key_id: ((awsctl_rc_access_key))
+    secret_access_key: ((awsctl_rc_secret_key))
+    endpoint: http://minio-minio-svc.default.svc.cluster.local:9000
+    disable_ssl: true
+    use_v4: true

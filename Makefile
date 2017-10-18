@@ -46,10 +46,12 @@ PLANTUML_IMAGE = "docker://think/plantuml:latest"
 CI_TARGET_LOCAL := minikube_conc
 VG_PIPELINENAME_MASTER := $(ELF_NAME)
 VG_PIPELINENAME_BRANCH := $(ELF_NAME)_branch
+VG_PIPELINENAME_GH_MASTER := $(ELF_NAME)_gh
 VG_PIPELINENAME_PRS := $(ELF_NAME)_prs
 CI_PIPELINES_PATH := ci
 CI_MASTER_PIPELINE := master.yml
 CI_BRANCH_PIPELINE := branch.yml
+CI_MASTER_GH_PIPELINE := master_gh.yml
 CI_PRS_PIPELINE := prs.yml
 
 
@@ -88,6 +90,7 @@ help:
 	@echo "  make set_pipeline_branch"
 	@echo "  make set_pipeline_master"
 	@echo "  make set_pipeline_prs"
+	@echo "  make set_pipeline_master_gh"
 	@echo ""
 	@echo "Add license headers:"
 	@echo "  make add_license"
@@ -379,6 +382,17 @@ endif
 	@echo "---> Applying CI pipeline ..."
 	fly -t $(CI_TARGET_LOCAL) set-pipeline -c $(CI_PIPELINES_PATH)/$(CI_PRS_PIPELINE) -p $(VG_PIPELINENAME_PRS)
 	fly -t $(CI_TARGET_LOCAL) expose-pipeline --pipeline $(VG_PIPELINENAME_PRS)
+
+.PHONY: set_pipeline_master_gh
+set_pipeline_master_gh:
+ifeq ($(DEBUG),true)
+	$(info elf appenvironment: $(ELF_APPENVIRONMENT))
+	$(info elf version: $(ELF_VERSION))
+	$(info debug: $(DEBUG))
+endif
+	@echo "---> Applying CI pipeline ..."
+	fly -t $(CI_TARGET_LOCAL) set-pipeline -c $(CI_PIPELINES_PATH)/$(CI_MASTER_GH_PIPELINE) -p $(VG_PIPELINENAME_GH_MASTER)
+	fly -t $(CI_TARGET_LOCAL) expose-pipeline --pipeline $(VG_PIPELINENAME_GH_MASTER)
 
 .PHONY: add_license
 add_license:
